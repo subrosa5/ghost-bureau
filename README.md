@@ -1,36 +1,88 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 👻 Бюро переселения привидений
 
-## Getting Started
+Тестовое задание **AI-first Developer 2.0** для MOX. Веб-приложение для оператора бюро,
+которое подбирает привидениям новые места обитания, объясняет решения и честно
+показывает, если переселить кого-то невозможно.
 
-First, run the development server:
+**Живая версия:** _(ссылка после деплоя)_
+**AI Worklog:** прямо в приложении, вкладка «AI Worklog» вверху страницы.
+
+## Запуск
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Откроется на `http://localhost:3000`. Секретов/API-ключей не требуется — всё состояние
+живёт в браузере (React state), бэкенда и базы данных нет.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Тесты:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm test        # vitest run (13 тестов на бизнес-логику подбора)
+```
 
-## Learn More
+Прод-сборка:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run build && npm start
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Как это устроено
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+src/
+├── lib/
+│   ├── types.ts        # доменные модели: GhostRequest, Place, Assignment
+│   ├── matching.ts      # алгоритм подбора: жёсткие ограничения + мягкий скор
+│   ├── matching.test.ts  # 13 тестов, включая все обязательные состояния
+│   ├── report.ts          # итоговый отчёт
+│   ├── labels.ts            # русские подписи для условий/освещения
+│   └── seed.ts                # демо-данные, специально подобранные под edge cases
+├── components/
+│   ├── GhostForm.tsx     # форма новой заявки с валидацией
+│   ├── AssignmentBoard.tsx # доска заявок + ручное переопределение места
+│   ├── ReportView.tsx      # вкладка «Отчёт»
+│   └── WorklogView.tsx      # вкладка «AI Worklog»
+└── app/page.tsx           # главная страница, связывает всё вместе
+```
 
-## Deploy on Vercel
+### Алгоритм подбора
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. **Жёсткие ограничения** (дисквалифицируют место полностью): нужен чердак,
+   боится зеркал, нельзя рядом с людьми.
+2. **Мягкий скор 0–100** среди мест, прошедших жёсткие ограничения: температура
+   (до 30 баллов), тишина относительно тревожности (до 30), освещение (до 20),
+   влажность для тех, кто любит сырость (до 20, у остальных — нейтральные 10).
+3. Привидения обрабатываются по срочности: сначала ближайший дедлайн, при
+   равенстве — более тревожные.
+4. Если подходящих мест по жёстким условиям нет вообще — «нет подходящего места».
+   Если есть, но все заняты — «места заняты». Если дедлайн уже прошёл — отдельная
+   причина, до попытки подбора места.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Оператор может в любой момент переопределить место вручную (выпадающий список
+у каждой заявки) — приложение не блокирует плохой выбор, но честно предупреждает,
+что именно не так (нарушено жёсткое условие и/или место переполнено).
+
+## Чеклист проверки перед сдачей
+
+- [x] Пустой список заявок — кнопка «Очистить все заявки», показывается
+      понятное пустое состояние, приложение не падает.
+- [x] Заявка без подходящего места — демо-привидение «Плакса Ивонна»
+      (нужен чердак + боится зеркал — оба места с чердаком имеют зеркала).
+- [x] Место переполнено — три демо-привидения конкурируют за два места
+      вместимостью 1 (маяк и типография), третье остаётся без места.
+- [x] Ручной выбор конфликтует с условиями — выбрать вручную место с
+      зеркалами для привидения, которое их боится: показывается предупреждение.
+- [x] Просроченный дедлайн — демо-привидение «Старейшина Морн» с дедлайном
+      в прошлом, отдельная причина в отчёте.
+- [x] Валидация формы — попытка добавить заявку без имени/с некорректной
+      тревожностью показывает понятное сообщение об ошибке, не ломает страницу.
+- [x] `npm test` — 13/13 тестов проходят.
+- [x] `npm run build` — прод-сборка без ошибок типов и линта.
+
+## AI Worklog
+
+Встроен в приложение (вкладка «AI Worklog»), не дублируется здесь намеренно —
+чтобы не было риска, что README и интерфейс разойдутся в описании процесса.
