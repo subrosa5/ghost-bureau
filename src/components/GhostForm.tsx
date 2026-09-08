@@ -3,6 +3,8 @@
 import { useState } from "react";
 import type { GhostRequest, SpecialCondition } from "@/lib/types";
 import { CONDITION_LABELS } from "@/lib/labels";
+import { DateInput } from "./DateInput";
+import { NumberStepper } from "./NumberStepper";
 
 const ALL_CONDITIONS = Object.keys(CONDITION_LABELS) as SpecialCondition[];
 
@@ -13,6 +15,10 @@ export function GhostForm({ onAdd }: { onAdd: (ghost: GhostRequest) => void }) {
   const [deadline, setDeadline] = useState("");
   const [conditions, setConditions] = useState<SpecialCondition[]>([]);
   const [error, setError] = useState<string | null>(null);
+  // Меняем key у DateInput при каждом сбросе формы — React сам размонтирует
+  // старый экземпляр и создаст новый с чистыми сегментами дд/мм/гггг,
+  // без эффекта-синхронизации внутри самого DateInput.
+  const [dateInputKey, setDateInputKey] = useState(0);
 
   function toggleCondition(c: SpecialCondition) {
     setConditions((prev) => (prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]));
@@ -63,6 +69,7 @@ export function GhostForm({ onAdd }: { onAdd: (ghost: GhostRequest) => void }) {
     setFavoriteTemperature("10");
     setDeadline("");
     setConditions([]);
+    setDateInputKey((k) => k + 1);
   }
 
   return (
@@ -97,34 +104,17 @@ export function GhostForm({ onAdd }: { onAdd: (ghost: GhostRequest) => void }) {
 
         <label className="flex flex-col gap-1 text-xs text-neutral-500">
           Тревожность (1–10)
-          <input
-            type="number"
-            min={1}
-            max={10}
-            className="rounded border border-border-strong bg-white px-2 py-1.5 text-sm text-neutral-900"
-            value={anxietyLevel}
-            onChange={(e) => setAnxietyLevel(e.target.value)}
-          />
+          <NumberStepper value={anxietyLevel} onChange={setAnxietyLevel} min={1} max={10} />
         </label>
 
-        <label className="flex flex-col gap-1 text-xs text-neutral-500">
-          Любимая температура, °C
-          <input
-            type="number"
-            className="rounded border border-border-strong bg-white px-2 py-1.5 text-sm text-neutral-900"
-            value={favoriteTemperature}
-            onChange={(e) => setFavoriteTemperature(e.target.value)}
-          />
+        <label className="flex flex-col gap-1 text-xs whitespace-nowrap text-neutral-500">
+          Температура, °C
+          <NumberStepper value={favoriteTemperature} onChange={setFavoriteTemperature} min={-30} max={40} />
         </label>
 
         <label className="col-span-2 flex flex-col gap-1 text-xs text-neutral-500">
           Дедлайн переселения
-          <input
-            type="date"
-            className="rounded border border-border-strong bg-white px-2 py-1.5 text-sm text-neutral-900"
-            value={deadline}
-            onChange={(e) => setDeadline(e.target.value)}
-          />
+          <DateInput key={dateInputKey} value={deadline} onChange={setDeadline} />
         </label>
       </div>
 

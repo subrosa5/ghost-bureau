@@ -20,6 +20,15 @@ export default function Home() {
   const [tab, setTab] = useState<Tab>("requests");
   const places = seedPlaces;
 
+  // Узел-цель портала для кликабельного слоя привидений (см. ParallaxBackdrop
+  // и комментарий у #ghost-hotspot-root ниже) — владеем им здесь, где он
+  // рендерится, и отдаём вниз пропом. callback-ref вызывает setState прямо
+  // при подключении/отключении DOM-ноды — это ровно тот случай, для
+  // которого callback-ref и предназначен, в отличие от useEffect +
+  // document.getElementById(), который раньше был внутри самого
+  // ParallaxBackdrop.
+  const [hotspotRoot, setHotspotRoot] = useState<HTMLDivElement | null>(null);
+
   // без этого дедлайн, истёкший "прямо во время просмотра" (вкладка открыта
   // и просто ждёт), не пересчитался бы, пока не случится какое-то другое
   // действие с заявками — allocate() принимает точку отсчёта явным
@@ -130,7 +139,7 @@ export default function Home() {
           визуально уходят под контент, а не поверх него. Кликабельность
           при этом не страдает — за неё отвечает отдельный невидимый слой
           в самом конце (#ghost-hotspot-root ниже), см. ParallaxBackdrop.tsx. */}
-      <ParallaxBackdrop />
+      <ParallaxBackdrop hotspotRoot={hotspotRoot} />
       <header className="flex items-center justify-between gap-4 border-b border-border bg-swatch px-6 py-6 sm:py-10">
         {/* Точный референс — их же wordmark ("BRANDING × DIGITAL"): светло-серая
             плашка (тот же #ececec, что у них под фирменным блоком), чисто
@@ -220,7 +229,7 @@ export default function Home() {
           поверх того, что раньше). Сам видимый слой при этом остаётся
           рано в разметке (см. <ParallaxBackdrop/> вверху) — визуально
           привидения по-прежнему уходят под контент. */}
-      <div id="ghost-hotspot-root" />
+      <div id="ghost-hotspot-root" ref={setHotspotRoot} />
     </div>
   );
 }

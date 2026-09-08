@@ -93,16 +93,16 @@ function floatStyle(g: GhostSpec): React.CSSProperties {
   return { animation: `ghost-float ${g.floatDuration}s ease-in-out infinite`, animationDelay: `${g.floatDelay}s` };
 }
 
-export function ParallaxBackdrop() {
+export function ParallaxBackdrop({ hotspotRoot }: { hotspotRoot: HTMLElement | null }) {
   const visualRefs = useRef<(HTMLDivElement | null)[]>([]);
   const hotspotRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [bubbles, setBubbles] = useState<Record<number, { text: string; key: number }>>({});
   const timeoutsRef = useRef<Record<number, ReturnType<typeof setTimeout>>>({});
-  const [hotspotRoot, setHotspotRoot] = useState<HTMLElement | null>(null);
-
-  useEffect(() => {
-    setHotspotRoot(document.getElementById("ghost-hotspot-root"));
-  }, []);
+  // Раньше узел портала искали сами через document.getElementById() внутри
+  // useEffect + setState — рабочий, но не идеальный паттерн (setState прямо
+  // в эффекте). Правильнее отдать владение узлом тому, кто его рендерит
+  // (page.tsx) — он получает DOM-ноду через callback-ref и передаёт её сюда
+  // пропом, без лишнего эффекта и лишнего рендера здесь.
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -187,7 +187,12 @@ export function ParallaxBackdrop() {
   }, []);
 
   function handleGhostClick(i: number) {
-    // тот же случайный выбор фразы, что и был — просто без рандома формы пузыря
+    // тот же случайный выбор фразы, что и был — просто без рандома формы пузыря.
+    // Это обработчик клика (вызывается только из onClick ниже), а не тело
+    // рендера — Math.random() здесь безопасен, линтер (react-compiler-
+    // ориентированное правило) не умеет отличать вызов внутри
+    // event-хендлера от вызова во время рендера.
+    // eslint-disable-next-line react-hooks/purity
     const text = PHRASES[Math.floor(Math.random() * PHRASES.length)];
     setBubbles((prev) => ({ ...prev, [i]: { text, key: Date.now() } }));
     clearTimeout(timeoutsRef.current[i]);
