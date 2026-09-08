@@ -21,14 +21,31 @@ export default function Home() {
   const { assignments, unresolved } = useMemo(() => allocate(ghosts, places), [ghosts, places]);
 
   // финальные назначения = автоматические, поверх которых наложены ручные
-  // переопределения оператора — используются и для occupancy, и для отчёта.
+  // переопределения оператора. ВАЖНО: строим по всем ghosts, а не только по
+  // assignments — иначе ручное расселение изначально нерасселённого
+  // привидения (например, у которого не было подходящего места) нигде не
+  // учитывалось бы: occupancy мест и отчёт продолжали бы считать его
+  // проблемным, хотя карточка заявки уже показывает успешное расселение.
   const finalAssignments = useMemo(() => {
-    return assignments.map((a) =>
-      manualOverrides[a.ghostId]
-        ? { ...a, placeId: manualOverrides[a.ghostId], manual: true }
-        : a
-    );
-  }, [assignments, manualOverrides]);
+    const autoByGhost = Object.fromEntries(assignments.map((a) => [a.ghostId, a]));
+    return ghosts
+      .map((g) => {
+        const manualPlaceId = manualOverrides[g.id];
+        const auto = autoByGhost[g.id];
+        if (manualPlaceId) {
+          return {
+            ghostId: g.id,
+            placeId: manualPlaceId,
+            score: auto?.score ?? 0,
+            reasons: auto?.reasons ?? [],
+            manual: true,
+            warning: null,
+          };
+        }
+        return auto ?? null;
+      })
+      .filter((a): a is NonNullable<typeof a> => a !== null);
+  }, [ghosts, assignments, manualOverrides]);
 
   const finalOccupancy = useMemo(() => {
     const occ: Record<string, number> = Object.fromEntries(places.map((p) => [p.id, 0]));
@@ -38,9 +55,17 @@ export default function Home() {
     return occ;
   }, [finalAssignments, places]);
 
+  // из unresolved убираем тех, кого оператор всё же расселил вручную —
+  // иначе отчёт противоречил бы карточке заявки (одно и то же привидение
+  // не может одновременно быть "расселено" и "проблемной заявкой").
+  const finalUnresolved = useMemo(
+    () => unresolved.filter((u) => !manualOverrides[u.ghostId]),
+    [unresolved, manualOverrides]
+  );
+
   const report = useMemo(
-    () => buildReport(ghosts, places, finalAssignments, unresolved),
-    [ghosts, places, finalAssignments, unresolved]
+    () => buildReport(ghosts, places, finalAssignments, finalUnresolved),
+    [ghosts, places, finalAssignments, finalUnresolved]
   );
 
   function handleAdd(ghost: GhostRequest) {

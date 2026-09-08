@@ -59,11 +59,14 @@ export function AssignmentBoard({
 
         let manualWarning: string | null = null;
         if (manualPlaceId && effectivePlace) {
-          const occBefore = occupancy[effectivePlaceId!] ?? 0;
-          // если это же место уже выбрано автоматически для этого привидения,
-          // не считаем его собственное место "занятым"
-          const adjustedOcc = auto?.placeId === effectivePlaceId ? occBefore - 1 : occBefore;
-          manualWarning = evaluateManualChoice(ghost, effectivePlace, adjustedOcc).warning;
+          // occupancy приходит уже пересчитанной с учётом этого самого ручного
+          // выбора (см. finalOccupancy в page.tsx) — то есть эта заявка сама
+          // уже входит в число occupancy[effectivePlaceId]. Чтобы понять,
+          // было ли место переполнено ДО неё, всегда вычитаем 1 за саму себя —
+          // не только в случае совпадения с автоматическим выбором.
+          const occIncludingSelf = occupancy[effectivePlaceId!] ?? 0;
+          const occBeforeSelf = Math.max(0, occIncludingSelf - 1);
+          manualWarning = evaluateManualChoice(ghost, effectivePlace, occBeforeSelf).warning;
         }
 
         return (
