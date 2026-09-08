@@ -30,7 +30,11 @@ export function buildReport(
     .filter((x): x is { ghost: GhostRequest; reason: string } => Boolean(x.ghost));
 
   return {
-    resettledCount: assignments.filter((a) => a.placeId).length,
+    // assignments здесь никогда не содержит запись с пустым placeId — и
+    // allocate(), и ручное переопределение в page.tsx всегда пишут
+    // конкретное место, поэтому лишний .filter(a => a.placeId) был мёртвым
+    // условием (всегда true), убрали для ясности.
+    resettledCount: assignments.length,
     unresettledCount: unresolved.length,
     mostProblematic,
     overloadedPlaces,

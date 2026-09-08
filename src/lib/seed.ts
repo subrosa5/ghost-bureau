@@ -4,8 +4,14 @@
 import type { GhostRequest, Place } from "./types";
 
 const daysFromNow = (n: number) => {
+  // setUTCDate + toISOString (тоже UTC) — согласованная арифметика.
+  // Раньше был баг: setDate/getDate работают в ЛОКАЛЬНОМ времени браузера,
+  // а сериализация через toISOString — в UTC. Ночью в часовых поясах
+  // восточнее UTC (например, Москва, UTC+3) локальная "сегодня" могла
+  // сериализоваться как вчерашняя UTC-дата — дедлайн "через 0 дней" на
+  // деле оказывался уже просроченным в момент создания заявки.
   const d = new Date();
-  d.setDate(d.getDate() + n);
+  d.setUTCDate(d.getUTCDate() + n);
   return d.toISOString().slice(0, 10);
 };
 

@@ -32,6 +32,13 @@ export function GhostForm({ onAdd }: { onAdd: (ghost: GhostRequest) => void }) {
       setError("Уровень тревожности должен быть числом от 1 до 10.");
       return;
     }
+    // Number("") === 0, что попадает в допустимый диапазон — без явной
+    // проверки на пустую строку очищенное поле молча проходило бы как 0°C
+    // вместо явной ошибки "укажите значение", как у остальных полей.
+    if (favoriteTemperature.trim() === "") {
+      setError("Укажите любимую температуру.");
+      return;
+    }
     const temp = Number(favoriteTemperature);
     if (!Number.isFinite(temp) || temp < -30 || temp > 40) {
       setError("Любимая температура должна быть числом от -30 до 40°C.");
@@ -59,7 +66,16 @@ export function GhostForm({ onAdd }: { onAdd: (ghost: GhostRequest) => void }) {
   }
 
   return (
-    <form onSubmit={submit} className="space-y-3 rounded-lg border border-neutral-700 bg-neutral-900/40 p-4">
+    <form
+      onSubmit={submit}
+      noValidate // валидация полностью своя (submit); без этого браузер
+      // блокировал бы событие submit нативной проверкой min/max поля
+      // "тревожность" ДО того, как отработает наш обработчик — из-за чего
+      // кастомная ошибка для этого поля никогда не показывалась (и любой
+      // предыдущий кастомный баннер ошибки не очищался), а для "температуры"
+      // (без min/max) всё работало как задумано — несогласованное поведение.
+      className="space-y-3 rounded-lg border border-neutral-700 bg-neutral-900/40 p-4"
+    >
       <h3 className="text-sm font-semibold text-neutral-300">Новая заявка</h3>
 
       {error && (

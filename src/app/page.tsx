@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { GhostForm } from "@/components/GhostForm";
 import { AssignmentBoard, PlacesOverview } from "@/components/AssignmentBoard";
 import { ReportView } from "@/components/ReportView";
@@ -18,7 +18,17 @@ export default function Home() {
   const [tab, setTab] = useState<Tab>("requests");
   const places = seedPlaces;
 
-  const { assignments, unresolved } = useMemo(() => allocate(ghosts, places), [ghosts, places]);
+  // без этого дедлайн, истёкший "прямо во время просмотра" (вкладка открыта
+  // и просто ждёт), не пересчитался бы, пока не случится какое-то другое
+  // действие с заявками — allocate() принимает точку отсчёта явным
+  // параметром именно для этого.
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 60_000);
+    return () => clearInterval(id);
+  }, []);
+
+  const { assignments, unresolved } = useMemo(() => allocate(ghosts, places, now), [ghosts, places, now]);
 
   // финальные назначения = автоматические, поверх которых наложены ручные
   // переопределения оператора. ВАЖНО: строим по всем ghosts, а не только по
