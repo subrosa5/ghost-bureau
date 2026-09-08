@@ -74,54 +74,54 @@ export function GhostForm({ onAdd }: { onAdd: (ghost: GhostRequest) => void }) {
       // кастомная ошибка для этого поля никогда не показывалась (и любой
       // предыдущий кастомный баннер ошибки не очищался), а для "температуры"
       // (без min/max) всё работало как задумано — несогласованное поведение.
-      className="space-y-3 rounded-lg border border-neutral-700 bg-neutral-900/40 p-4"
+      className="space-y-3 rounded-lg border border-border bg-neutral-50 p-4"
     >
-      <h3 className="text-sm font-semibold text-neutral-300">Новая заявка</h3>
+      <h3 className="text-sm font-semibold text-neutral-700">Новая заявка</h3>
 
       {error && (
-        <p role="alert" className="rounded border border-red-800 bg-red-950/50 px-3 py-2 text-sm text-red-300">
+        <p role="alert" className="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
           {error}
         </p>
       )}
 
       <div className="grid grid-cols-2 gap-3">
-        <label className="col-span-2 flex flex-col gap-1 text-xs text-neutral-400">
+        <label className="col-span-2 flex flex-col gap-1 text-xs text-neutral-500">
           Имя привидения
           <input
-            className="rounded border border-neutral-700 bg-neutral-950 px-2 py-1.5 text-sm text-neutral-100"
+            className="rounded border border-border-strong bg-white px-2 py-1.5 text-sm text-neutral-900"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Например, Тень Августа"
           />
         </label>
 
-        <label className="flex flex-col gap-1 text-xs text-neutral-400">
+        <label className="flex flex-col gap-1 text-xs text-neutral-500">
           Тревожность (1–10)
           <input
             type="number"
             min={1}
             max={10}
-            className="rounded border border-neutral-700 bg-neutral-950 px-2 py-1.5 text-sm text-neutral-100"
+            className="rounded border border-border-strong bg-white px-2 py-1.5 text-sm text-neutral-900"
             value={anxietyLevel}
             onChange={(e) => setAnxietyLevel(e.target.value)}
           />
         </label>
 
-        <label className="flex flex-col gap-1 text-xs text-neutral-400">
+        <label className="flex flex-col gap-1 text-xs text-neutral-500">
           Любимая температура, °C
           <input
             type="number"
-            className="rounded border border-neutral-700 bg-neutral-950 px-2 py-1.5 text-sm text-neutral-100"
+            className="rounded border border-border-strong bg-white px-2 py-1.5 text-sm text-neutral-900"
             value={favoriteTemperature}
             onChange={(e) => setFavoriteTemperature(e.target.value)}
           />
         </label>
 
-        <label className="col-span-2 flex flex-col gap-1 text-xs text-neutral-400">
+        <label className="col-span-2 flex flex-col gap-1 text-xs text-neutral-500">
           Дедлайн переселения
           <input
             type="date"
-            className="rounded border border-neutral-700 bg-neutral-950 px-2 py-1.5 text-sm text-neutral-100"
+            className="rounded border border-border-strong bg-white px-2 py-1.5 text-sm text-neutral-900"
             value={deadline}
             onChange={(e) => setDeadline(e.target.value)}
           />
@@ -129,7 +129,7 @@ export function GhostForm({ onAdd }: { onAdd: (ghost: GhostRequest) => void }) {
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <span className="text-xs text-neutral-400">Особые условия</span>
+        <span className="text-xs text-neutral-500">Особые условия</span>
         <div className="flex flex-wrap gap-2">
           {ALL_CONDITIONS.map((c) => (
             <button
@@ -138,8 +138,8 @@ export function GhostForm({ onAdd }: { onAdd: (ghost: GhostRequest) => void }) {
               onClick={() => toggleCondition(c)}
               className={`rounded-full border px-3 py-1 text-xs transition ${
                 conditions.includes(c)
-                  ? "border-violet-500 bg-violet-500/20 text-violet-200"
-                  : "border-neutral-700 text-neutral-400 hover:border-neutral-500"
+                  ? "border-accent bg-accent/10 text-accent"
+                  : "border-border-strong text-neutral-500 hover:border-neutral-400"
               }`}
             >
               {CONDITION_LABELS[c]}
@@ -150,7 +150,7 @@ export function GhostForm({ onAdd }: { onAdd: (ghost: GhostRequest) => void }) {
 
       <button
         type="submit"
-        className="w-full rounded bg-violet-600 px-3 py-2 text-sm font-medium text-white hover:bg-violet-500"
+        className="w-full rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover"
       >
         Добавить заявку
       </button>

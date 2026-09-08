@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { GhostForm } from "@/components/GhostForm";
 import { AssignmentBoard, PlacesOverview } from "@/components/AssignmentBoard";
+import { ChainLink3D } from "@/components/ChainLink3D";
+import { ParallaxBackdrop } from "@/components/ParallaxBackdrop";
 import { ReportView } from "@/components/ReportView";
 import { WorklogView } from "@/components/WorklogView";
 import { allocate } from "@/lib/matching";
@@ -117,23 +119,52 @@ export default function Home() {
   ];
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-100">
-      <header className="border-b border-neutral-800 px-6 py-5">
-        <h1 className="text-xl font-semibold">👻 Бюро переселения привидений</h1>
-        <p className="mt-1 text-sm text-neutral-500">
-          Подбираем привидениям новые места обитания — с объяснением решений и учётом конфликтов.
-        </p>
+    // без bg-white здесь: фон и так задан на <body> (globals.css) —
+    // если продублировать его тут, эта обычная (не fixed/не позиционированная)
+    // заливка красится ПОВЕРХ фонового fixed-слоя по правилам порядка
+    // отрисовки — ровно поэтому пятна параллакса были не видны.
+    <div className="min-h-screen text-neutral-900">
+      {/* Видимый слой привидений — специально в начале разметки: элемент,
+          который в DOM раньше, красится ПОД тем, что идёт позже (header
+          с непрозрачным bg-swatch и карточки с bg-white) — так они
+          визуально уходят под контент, а не поверх него. Кликабельность
+          при этом не страдает — за неё отвечает отдельный невидимый слой
+          в самом конце (#ghost-hotspot-root ниже), см. ParallaxBackdrop.tsx. */}
+      <ParallaxBackdrop />
+      <header className="flex items-center justify-between gap-4 border-b border-border bg-swatch px-6 py-6 sm:py-10">
+        {/* Точный референс — их же wordmark ("BRANDING × DIGITAL"): светло-серая
+            плашка (тот же #ececec, что у них под фирменным блоком), чисто
+            чёрный текст (никакого цветного акцента здесь), умеренный вес
+            (не extrabold — у них это где-то Medium/SemiBold), широкий трекинг.
+            Подзаголовок ниже — намеренно другой, более читаемый уровень
+            иерархии на обычном белом фоне, не часть самого wordmark. */}
+        <h1 className="text-3xl font-semibold uppercase tracking-wide text-black sm:text-5xl">
+          Бюро переселения × Привидений
+        </h1>
+        {/* 3D-элемент в духе их студийного рендера цепи — своя форма/сцена,
+            не их файл, см. ChainLink3D.tsx. Прячем на совсем узких экранах,
+            чтобы не спорил с заголовком за место. */}
+        <div className="hidden shrink-0 sm:block">
+          <ChainLink3D size={140} />
+        </div>
       </header>
+      {/* Типографика тела текста по их референсу: крупно, светлым весом,
+          приглушённый серый как база — и несколько ключевых слов ярче/
+          жирнее внутри той же фразы, а не отдельным акцентным цветом. */}
+      <p className="border-b border-border px-6 py-6 text-xl font-normal leading-snug text-neutral-400 sm:py-8 sm:text-2xl">
+        Подбираем привидениям <span className="font-medium text-neutral-900">новые места обитания</span> — с
+        объяснением решений и учётом <span className="font-medium text-neutral-900">конфликтов</span>.
+      </p>
 
-      <nav className="flex gap-1 border-b border-neutral-800 px-6">
+      <nav className="flex gap-1 border-b border-border px-6">
         {tabs.map((t) => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
             className={`px-4 py-3 text-sm font-medium transition ${
               tab === t.id
-                ? "border-b-2 border-violet-500 text-violet-300"
-                : "text-neutral-500 hover:text-neutral-300"
+                ? "border-b-2 border-accent text-accent"
+                : "text-neutral-500 hover:text-neutral-800"
             }`}
           >
             {t.label}
@@ -149,19 +180,19 @@ export default function Home() {
               <div className="flex gap-2">
                 <button
                   onClick={handleClearAll}
-                  className="flex-1 rounded border border-neutral-700 px-3 py-1.5 text-xs text-neutral-400 hover:border-red-700 hover:text-red-400"
+                  className="flex-1 rounded border border-border-strong px-3 py-1.5 text-xs text-neutral-500 hover:border-red-300 hover:text-red-600"
                 >
                   Очистить все заявки
                 </button>
                 <button
                   onClick={handleLoadDemo}
-                  className="flex-1 rounded border border-neutral-700 px-3 py-1.5 text-xs text-neutral-400 hover:border-violet-700 hover:text-violet-300"
+                  className="flex-1 rounded border border-border-strong px-3 py-1.5 text-xs text-neutral-500 hover:border-accent hover:text-accent"
                 >
                   Загрузить пример
                 </button>
               </div>
               <div>
-                <h3 className="mb-2 text-sm font-semibold text-neutral-300">Места переселения</h3>
+                <h3 className="mb-2 text-sm font-semibold text-neutral-700">Места переселения</h3>
                 <PlacesOverview places={places} occupancy={finalOccupancy} />
               </div>
             </div>
@@ -182,6 +213,14 @@ export default function Home() {
         {tab === "report" && <ReportView report={report} />}
         {tab === "worklog" && <WorklogView />}
       </main>
+
+      {/* Цель для портала кликабельного (невидимого) слоя привидений —
+          намеренно в самом конце разметки, чтобы клики по нему реально
+          доходили (элемент, который в DOM позже, красится/кликается
+          поверх того, что раньше). Сам видимый слой при этом остаётся
+          рано в разметке (см. <ParallaxBackdrop/> вверху) — визуально
+          привидения по-прежнему уходят под контент. */}
+      <div id="ghost-hotspot-root" />
     </div>
   );
 }

@@ -9,7 +9,7 @@ function ConditionBadges({ conditions }: { conditions: GhostRequest["specialCond
   return (
     <div className="flex flex-wrap gap-1">
       {conditions.map((c) => (
-        <span key={c} className="rounded-full bg-neutral-800 px-2 py-0.5 text-[11px] text-neutral-300">
+        <span key={c} className="rounded-full bg-neutral-100 px-2 py-0.5 text-[11px] text-neutral-600">
           {CONDITION_LABELS[c]}
         </span>
       ))}
@@ -42,7 +42,7 @@ export function AssignmentBoard({
 
   if (ghosts.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed border-neutral-700 p-8 text-center text-sm text-neutral-500">
+      <div className="rounded-lg border border-dashed border-border-strong p-8 text-center text-sm text-neutral-500">
         Заявок пока нет. Добавьте первую заявку слева или нажмите «Загрузить пример».
       </div>
     );
@@ -70,11 +70,11 @@ export function AssignmentBoard({
         }
 
         return (
-          <div key={ghost.id} className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-4">
+          <div key={ghost.id} className="rounded-lg border border-border bg-white p-4 shadow-sm">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <div className="flex items-center gap-2">
-                  <h4 className="font-medium text-neutral-100">{ghost.name}</h4>
+                  <h4 className="font-medium text-neutral-900">{ghost.name}</h4>
                   <span className="text-xs text-neutral-500">до {ghost.deadline}</span>
                 </div>
                 <p className="mt-0.5 text-xs text-neutral-500">
@@ -86,22 +86,22 @@ export function AssignmentBoard({
               </div>
               <button
                 onClick={() => onRemoveGhost(ghost.id)}
-                className="shrink-0 text-xs text-neutral-500 hover:text-red-400"
+                className="shrink-0 text-xs text-neutral-500 hover:text-red-600"
                 aria-label={`Удалить заявку ${ghost.name}`}
               >
                 удалить
               </button>
             </div>
 
-            <div className="mt-3 border-t border-neutral-800 pt-3">
+            <div className="mt-3 border-t border-border pt-3">
               {effectivePlace ? (
                 <div>
-                  <p className="text-sm text-neutral-200">
-                    → <span className="font-medium">{effectivePlace.name}</span>
+                  <p className="text-sm text-neutral-700">
+                    → <span className="font-medium text-neutral-900">{effectivePlace.name}</span>
                     {!manualPlaceId && auto && (
-                      <span className="ml-2 text-xs text-emerald-400">score {auto.score}/100</span>
+                      <span className="ml-2 text-xs text-accent-blue">score {auto.score}/100</span>
                     )}
-                    {manualPlaceId && <span className="ml-2 text-xs text-amber-400">выбрано вручную</span>}
+                    {manualPlaceId && <span className="ml-2 text-xs text-amber-600">выбрано вручную</span>}
                   </p>
                   {!manualPlaceId && auto && auto.reasons.length > 0 && (
                     <ul className="mt-1 list-inside list-disc text-xs text-neutral-500">
@@ -111,19 +111,19 @@ export function AssignmentBoard({
                     </ul>
                   )}
                   {manualWarning && (
-                    <p className="mt-1.5 rounded border border-amber-800 bg-amber-950/40 px-2 py-1 text-xs text-amber-300">
+                    <p className="mt-1.5 rounded border border-amber-200 bg-amber-50 px-2 py-1 text-xs text-amber-700">
                       ⚠ {manualWarning}
                     </p>
                   )}
                 </div>
               ) : (
-                <p className="text-sm text-red-400">✕ не расселён: {unresolvedReason}</p>
+                <p className="text-sm text-red-600">✕ не расселён: {unresolvedReason}</p>
               )}
 
               <label className="mt-2 flex items-center gap-2 text-xs text-neutral-500">
                 Переселить вручную:
                 <select
-                  className="rounded border border-neutral-700 bg-neutral-950 px-2 py-1 text-xs text-neutral-200"
+                  className="rounded border border-border-strong bg-white px-2 py-1 text-xs text-neutral-700"
                   value={manualPlaceId ?? ""}
                   onChange={(e) => onManualChange(ghost.id, e.target.value)}
                 >
@@ -153,12 +153,12 @@ export function PlacesOverview({ places, occupancy }: { places: Place[]; occupan
           <div
             key={p.id}
             className={`rounded-lg border p-3 text-xs ${
-              over ? "border-red-800 bg-red-950/30" : "border-neutral-800 bg-neutral-900/30"
+              over ? "border-red-200 bg-red-50" : "border-border bg-neutral-50"
             }`}
           >
             <div className="flex items-center justify-between">
-              <span className="font-medium text-neutral-200">{p.name}</span>
-              <span className={over ? "font-semibold text-red-400" : "text-neutral-400"}>
+              <span className="font-medium text-neutral-800">{p.name}</span>
+              <span className={over ? "font-semibold text-red-600" : "text-neutral-500"}>
                 {used}/{p.capacity}
               </span>
             </div>

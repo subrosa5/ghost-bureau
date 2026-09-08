@@ -1,26 +1,40 @@
 @import "tailwindcss";
 
+/* Палитра и шрифт подсмотрены на mox-studio.ru: белый фон, почти чёрный
+   текст, коралловый акцент (#fa876b/#ff8562), синий (#1f5bff), светло-серый
+   для "плашек" wordmark-заголовков (#ececec, их же цвет фона под логотипом).
+   Держим тему фиксированной (без auto dark mode) — сознательный выбор:
+   это стилизация под конкретный бренд MOX, а не общего назначения UI. */
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #1a1a1a;
+  --muted: #a1a1a1;
+  --border: #ececec;
+  --border-strong: #cbcbcb;
+  --accent: #fa876b;
+  --accent-hover: #ff8562;
+  --accent-blue: #1f5bff;
+  --swatch: #ececec;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-blue: var(--accent-blue);
+  --color-swatch: var(--swatch);
+  /* было --font-sans: var(--font-sans) — ссылка сама на себя, шрифт молча
+     откатывался на системный дефолт. Правильное имя — --font-montserrat,
+     которое next/font реально проставляет на <html> (см. layout.tsx). */
+  --font-sans: var(--font-montserrat);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
 }
